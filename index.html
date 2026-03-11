@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Something Important...</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose: #c0394b;
+    --blush: #f5c6cb;
+    --gold: #c9a96e;
+    --cream: #fdf6ee;
+    --deep: #1a0a0f;
+    --wine: #6b1a2a;
+  }
+
+  body {
+    background: var(--deep);
+    font-family: 'Cormorant Garamond', serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: default;
+  }
+
+  /* ── PETAL CANVAS ── */
+  #petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+  /* ── PAGES ── */
+  .page {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.9s ease;
+    z-index: 1;
+    padding: 2rem;
+    text-align: center;
+  }
+  .page.active { opacity: 1; pointer-events: all; }
+
+  /* ── BACKGROUND GRADIENTS per page ── */
+  #p1 { background: radial-gradient(ellipse at 30% 40%, #3b0a18 0%, #1a0a0f 60%); }
+  #p2 { background: radial-gradient(ellipse at 70% 60%, #2a0d1a 0%, #0f0608 60%); }
+  #p3 { background: radial-gradient(ellipse at 50% 30%, #1e0b14 0%, #0d0408 60%); }
+  #p4 { background: radial-gradient(ellipse at 40% 70%, #0a1020 0%, #060810 60%); }
+  #p5 { background: radial-gradient(ellipse at 60% 40%, #1a0a0f 0%, #0f0810 60%); }
+
+  /* ── TYPOGRAPHY ── */
+  .eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.8;
+    margin-bottom: 1.2rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.15;
+    max-width: 700px;
+    margin-bottom: 1.4rem;
+    text-shadow: 0 0 60px rgba(192,57,75,0.3);
+  }
+
+  h1 span { color: var(--gold); }
+
+  .subtitle {
+    font-size: clamp(1rem, 2.2vw, 1.35rem);
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(245,198,203,0.75);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 2.8rem;
+  }
+
+  /* ── ORNAMENT ── */
+  .ornament {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 2rem;
+    color: var(--gold);
+    opacity: 0.6;
+    font-size: 1.2rem;
+  }
+  .ornament::before, .ornament::after {
+    content: '';
+    display: block; width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .ornament::after { background: linear-gradient(90deg, var(--gold), transparent); }
+
+  /* ── BUTTONS ── */
+  .btn-yes {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    padding: 0.85em 2.8em;
+    border: 1.5px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s, background 0.3s, transform 0.2s, box-shadow 0.3s;
+    border-radius: 2px;
+  }
+  .btn-yes::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--rose), var(--wine));
+    transform: translateX(-105%);
+    transition: transform 0.4s cubic-bezier(0.77,0,0.18,1);
+    z-index: -1;
+  }
+  .btn-yes:hover { color: var(--cream); box-shadow: 0 0 30px rgba(192,57,75,0.45); transform: translateY(-2px); }
+  .btn-yes:hover::before { transform: translateX(0); }
+  .btn-yes:active { transform: translateY(0); }
+
+  .btn-no {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(0.85rem, 1.8vw, 1rem);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    padding: 0.65em 1.8em;
+    border: 1px solid rgba(245,198,203,0.2);
+    background: transparent;
+    color: rgba(245,198,203,0.3);
+    cursor: pointer;
+    position: fixed;
+    transition: color 0.2s;
+    border-radius: 2px;
+    user-select: none;
+    z-index: 10;
+  }
+  .btn-no:hover { color: rgba(245,198,203,0.5); }
+
+  .btn-row {
+    display: flex; gap: 1.4rem;
+    align-items: center; justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── HEART ── */
+  .heart-wrap {
+    position: relative;
+    width: 90px; height: 90px;
+    margin-bottom: 1.8rem;
+  }
+  .heart-wrap svg { width: 100%; height: 100%; filter: drop-shadow(0 0 18px rgba(192,57,75,0.6)); animation: heartbeat 2s ease-in-out infinite; }
+  @keyframes heartbeat {
+    0%,100% { transform: scale(1); }
+    14% { transform: scale(1.12); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.08); }
+    56% { transform: scale(1); }
+  }
+
+  /* ── RING ── */
+  .ring-wrap { font-size: 5rem; margin-bottom: 1.5rem; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+  /* ── STARS ── */
+  .stars-bg {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 20%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 55%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 35% 88%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 72% 45%, rgba(255,255,255,0.25) 0%, transparent 100%);
+    animation: twinkle 6s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+
+  /* ── FINAL PAGE ── */
+  .phone-box {
+    margin: 1.8rem auto 0;
+    padding: 1.2rem 2.4rem;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    background: rgba(201,169,110,0.07);
+    backdrop-filter: blur(4px);
+  }
+  .phone-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-bottom: 0.4rem;
+  }
+  .phone-number {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    color: var(--cream);
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 30px rgba(201,169,110,0.4);
+  }
+
+  /* ── CONFETTI ── */
+  .confetti-piece {
+    position: fixed; pointer-events: none; z-index: 100;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── ENTRANCE ANIMATIONS ── */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .page.active .fade-up { opacity: 1; transform: translateY(0); }
+  .page.active .fade-up:nth-child(1) { transition-delay: 0.15s; }
+  .page.active .fade-up:nth-child(2) { transition-delay: 0.3s; }
+  .page.active .fade-up:nth-child(3) { transition-delay: 0.45s; }
+  .page.active .fade-up:nth-child(4) { transition-delay: 0.6s; }
+  .page.active .fade-up:nth-child(5) { transition-delay: 0.75s; }
+  .page.active .fade-up:nth-child(6) { transition-delay: 0.9s; }
+
+  /* ── NO COUNTER HINT ── */
+  .no-hint {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    font-size: 0.75rem; letter-spacing: 0.2em; color: rgba(245,198,203,0.2);
+    pointer-events: none; z-index: 20;
+    transition: opacity 0.5s;
+    font-style: italic;
+  }
+
+  /* ── PAGE 4: REASONS ── */
+  .reasons-list {
+    list-style: none;
+    text-align: left;
+    margin: 0 auto 2.5rem;
+    max-width: 420px;
+  }
+  .reasons-list li {
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
+    color: rgba(245,198,203,0.85);
+    padding: 0.5rem 0 0.5rem 2rem;
+    border-bottom: 1px solid rgba(201,169,110,0.1);
+    position: relative;
+    font-weight: 300;
+    font-style: italic;
+  }
+  .reasons-list li::before {
+    content: '✦';
+    position: absolute; left: 0;
+    color: var(--gold); font-style: normal; font-size: 0.75rem;
+    top: 0.6rem;
+  }
+
+  /* ── GLOW PULSE ── */
+  .glow-ring {
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    border: 1px solid rgba(192,57,75,0.15);
+    animation: pulseRing 3s ease-out infinite;
+    pointer-events: none;
+  }
+  .glow-ring:nth-child(2) { animation-delay: 1s; }
+  .glow-ring:nth-child(3) { animation-delay: 2s; }
+  @keyframes pulseRing {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-bg"></div>
+<canvas id="petals"></canvas>
+
+<!-- ════════════════════════════════════════
+     PAGE 1 — The Opening
+════════════════════════════════════════ -->
+<div class="page active" id="p1">
+  <p class="eyebrow fade-up">A message, just for you</p>
+  <h1 class="fade-up">There's something I've been <span>meaning to say...</span></h1>
+  <div class="ornament fade-up">✦</div>
+  <p class="subtitle fade-up">I've been holding onto these words for a while.<br>I hope you'll give me just a moment of your time.</p>
+  <button class="btn-yes fade-up" onclick="goTo(2)">I'm listening &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 2 — The Feeling
+════════════════════════════════════════ -->
+<div class="page" id="p2">
+  <div class="heart-wrap fade-up">
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <svg viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1">
+      <path d="M50 82 C50 82 6 54 6 28 C6 14 17 4 30 4 C39 4 47 10 50 18 C53 10 61 4 70 4 C83 4 94 14 94 28 C94 54 50 82 50 82Z" fill="#c0394b"/>
+    </svg>
+  </div>
+  <p class="eyebrow fade-up">How I feel</p>
+  <h1 class="fade-up">Every time you're around,<br><span>the world feels warmer.</span></h1>
+  <p class="subtitle fade-up">You have this way of making ordinary moments feel like something worth remembering. And I find myself thinking about you more than I probably should admit.</p>
+  <button class="btn-yes fade-up" onclick="goTo(3)">Tell me more &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 3 — The Reasons
+════════════════════════════════════════ -->
+<div class="page" id="p3">
+  <p class="eyebrow fade-up">A few reasons why</p>
+  <h1 class="fade-up">You are <span>extraordinary,</span><br>and here's the proof</h1>
+  <ul class="reasons-list fade-up">
+    <li>Your laugh is the kind that makes everyone else want to laugh too</li>
+    <li>You carry kindness like it costs you nothing</li>
+    <li>The way your eyes light up when you talk about things you love</li>
+    <li>You're effortlessly yourself — and that's rare</li>
+    <li>Being near you simply feels like the right place to be</li>
+  </ul>
+  <button class="btn-yes fade-up" onclick="goTo(4)">Go on... &rarr;</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 4 — The Ask
+════════════════════════════════════════ -->
+<div class="page" id="p4">
+  <div class="ring-wrap fade-up">🌹</div>
+  <p class="eyebrow fade-up">The question</p>
+  <h1 class="fade-up">So, will you go on<br>a <span>date</span> with me?</h1>
+  <p class="subtitle fade-up">No pressure. No expectations. Just two people, a nice evening, and the chance to make a memory together.</p>
+  <div class="btn-row fade-up">
+    <button class="btn-yes" onclick="goTo(5)">Yes, I'd love that 💛</button>
+  </div>
+  <div id="no-hint" class="no-hint"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE 5 — The Happy Ending
+════════════════════════════════════════ -->
+<div class="page" id="p5">
+  <p class="eyebrow fade-up">You made the right choice 🥂</p>
+  <h1 class="fade-up">You've just made<br>my <span>entire year.</span></h1>
+  <p class="subtitle fade-up">I can't wait to spend some time with you. Text me whenever you're ready — no rush, no pressure. Just looking forward to it.</p>
+  <div class="phone-box fade-up">
+    <p class="phone-label">My number</p>
+    <p class="phone-number">074 067 1759</p>
+  </div>
+  <p class="subtitle fade-up" style="margin-top:1.5rem;font-size:0.95rem;opacity:0.6;">— with all the courage I could gather 🌹</p>
+</div>
+
+<!-- The Runaway "No" Button -->
+<button class="btn-no" id="noBtn" onmouseenter="runAway()" ontouchstart="runAway()" onclick="noClick()">No, thanks</button>
+
+<script>
+// ── PAGE NAVIGATION ──
+let currentPage = 1;
+const noBtn = document.getElementById('noBtn');
+let noVisible = false;
+let noAttempts = 0;
+const hints = [
+  "Hmm, it keeps moving...",
+  "Try harder 😏",
+  "It really doesn't want to be clicked...",
+  "Maybe just click Yes? 😊",
+  "The No button has trust issues 🏃",
+];
+
+function goTo(n) {
+  document.getElementById('p' + currentPage).classList.remove('active');
+  currentPage = n;
+  const next = document.getElementById('p' + n);
+  next.classList.add('active');
+
+  if (n === 5) {
+    hideNoBtn();
+    launchConfetti();
+  } else {
+    showNoBtn();
+  }
+}
+
+// ── NO BUTTON ──
+function showNoBtn() {
+  noBtn.style.opacity = '1';
+  noBtn.style.pointerEvents = 'all';
+  placeNoBtn();
+  noVisible = true;
+}
+function hideNoBtn() {
+  noBtn.style.opacity = '0';
+  noBtn.style.pointerEvents = 'none';
+  noVisible = false;
+}
+
+function placeNoBtn() {
+  const margin = 80;
+  const x = margin + Math.random() * (window.innerWidth - margin * 2 - 120);
+  const y = margin + Math.random() * (window.innerHeight - margin * 2 - 50);
+  noBtn.style.left = x + 'px';
+  noBtn.style.top = y + 'px';
+}
+
+function runAway() {
+  noAttempts++;
+  const hint = document.getElementById('no-hint');
+  if (hint && noAttempts <= hints.length) {
+    hint.textContent = hints[noAttempts - 1];
+    hint.style.opacity = '1';
+    clearTimeout(hint._t);
+    hint._t = setTimeout(() => hint.style.opacity = '0', 2200);
+  }
+
+  // Find a corner far from mouse
+  const safeSpots = [
+    { x: 20, y: 20 },
+    { x: window.innerWidth - 160, y: 20 },
+    { x: 20, y: window.innerHeight - 60 },
+    { x: window.innerWidth - 160, y: window.innerHeight - 60 },
+    { x: window.innerWidth / 2 - 60, y: 20 },
+    { x: window.innerWidth / 2 - 60, y: window.innerHeight - 60 },
+    { x: 20, y: window.innerHeight / 2 },
+    { x: window.innerWidth - 160, y: window.innerHeight / 2 },
+  ];
+
+  const rect = noBtn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  let best = safeSpots[0];
+  let maxDist = 0;
+  for (const s of safeSpots) {
+    const d = Math.hypot(s.x - cx, s.y - cy);
+    if (d > maxDist) { maxDist = d; best = s; }
+  }
+
+  noBtn.style.transition = 'left 0.22s cubic-bezier(0.34,1.56,0.64,1), top 0.22s cubic-bezier(0.34,1.56,0.64,1)';
+  noBtn.style.left = best.x + 'px';
+  noBtn.style.top = best.y + 'px';
+
+  setTimeout(() => noBtn.style.transition = '', 300);
+}
+
+function noClick() {
+  // If somehow clicked, just move it
+  runAway();
+}
+
+// Show No button from the start (page 1)
+showNoBtn();
+
+// ── PETAL ANIMATION ──
+const canvas = document.getElementById('petals');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const colors = ['#c0394b','#e8728a','#f5c6cb','#c9a96e','#f9dde5'];
+const petals = Array.from({length: 38}, () => ({
+  x: Math.random() * canvas.width,
+  y: -20 - Math.random() * canvas.height,
+  r: 4 + Math.random() * 6,
+  color: colors[Math.floor(Math.random() * colors.length)],
+  speed: 0.5 + Math.random() * 1.2,
+  drift: (Math.random() - 0.5) * 0.6,
+  rot: Math.random() * Math.PI * 2,
+  rotSpeed: (Math.random() - 0.5) * 0.04,
+  opacity: 0.4 + Math.random() * 0.5,
+  waver: Math.random() * Math.PI * 2,
+  waverSpeed: 0.015 + Math.random() * 0.02,
+}));
+
+function drawPetal(p) {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot);
+  ctx.globalAlpha = p.opacity;
+  ctx.fillStyle = p.color;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, p.r, p.r * 1.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function animPetals() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const p of petals) {
+    p.waver += p.waverSpeed;
+    p.x += p.drift + Math.sin(p.waver) * 0.5;
+    p.y += p.speed;
+    p.rot += p.rotSpeed;
+    if (p.y > canvas.height + 20) {
+      p.y = -20;
+      p.x = Math.random() * canvas.width;
+    }
+    drawPetal(p);
+  }
+  requestAnimationFrame(animPetals);
+}
+animPetals();
+
+// ── CONFETTI ──
+function launchConfetti() {
+  const colors2 = ['#c0394b','#c9a96e','#f5c6cb','#ffffff','#6b1a2a','#f9dde5'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.top = '-10px';
+    el.style.background = colors2[Math.floor(Math.random() * colors2.length)];
+    el.style.width = (5 + Math.random() * 8) + 'px';
+    el.style.height = (5 + Math.random() * 8) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.animationDuration = (2 + Math.random() * 3) + 's';
+    el.style.animationDelay = (Math.random() * 1.5) + 's';
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+// ── RESIZE ──
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
